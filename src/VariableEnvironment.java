@@ -30,14 +30,13 @@ public class VariableEnvironment
 	//any name you look for, will be found.
 	public int getValue(String name)
 	{
-		int tempValue = 0;
 		for(int i = 0; i < theVariables.size(); i++)
 		{
 			if(name == theVariables.get(i).getName()) 
 			{
-				tempValue = theVariables.get(i).getValue();
+				return theVariables.get(i).getValue();
 			}
 		}
-		return tempValue;
+		return -1;
 	}
 }
