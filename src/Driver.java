@@ -10,6 +10,6 @@ public class Driver
 		env.display(); //show all of the variables
 		System.out.println(env.getValue("a")); //5
 		System.out.println(env.getValue("b")); //7
-		System.out.println(env.getValue("c")); //7
+		System.out.println(env.getValue("c")); //-1
 	}
 }
