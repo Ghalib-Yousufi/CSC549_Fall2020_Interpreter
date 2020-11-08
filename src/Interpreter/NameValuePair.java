@@ -1,3 +1,5 @@
+package Interpreter;
+
 public class NameValuePair 
 {
 	private String name;

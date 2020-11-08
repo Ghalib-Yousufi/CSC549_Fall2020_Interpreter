@@ -1,4 +1,6 @@
-public class Statement 
+package Parser;
+
+public class Statement
 {
 	protected String statementType;
 	
