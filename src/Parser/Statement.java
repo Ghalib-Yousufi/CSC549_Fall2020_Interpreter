@@ -1,6 +1,6 @@
 package Parser;
 
-public class Statement
+public abstract class Statement
 {
 	protected String statementType;
 	

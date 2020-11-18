@@ -11,10 +11,12 @@ public abstract class Expression
 	
 	public String toString()
 	{
-		return "Statement: " + this.expressionType;
+		return "Expression: " + this.expressionType;
+	}
+
+	public String getExpressionType() {
+		return expressionType;
 	}
 	
-	public String getExpressionType() {
-		return this.expressionType;
-	}
+	
 }

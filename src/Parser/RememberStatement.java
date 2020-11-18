@@ -30,13 +30,10 @@ public class RememberStatement extends Statement
 		return type;
 	}
 
-	public Expression getValue() 
-	{
-		return value;
-	}
-	
 	public Expression getValueExpression() 
 	{
 		return value;
 	}
+	
+	
 }
