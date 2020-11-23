@@ -84,6 +84,43 @@ public class Parser
 		return theResult;
 	}
 	
+	static TestExpression parseTestExpression(String expression)
+	{
+		String[] theParts = expression.split("\\s+");
+		String[] doStatement = expression.split("do");
+		String doStatementStr = null;
+		String otherStatementStr = null;
+
+		if(theParts[0].equals("test"))
+		{
+			System.out.println("Expression Identified : "+theParts[0]);
+		}
+		for(int i =0; i < doStatement.length ; i++) {
+			if(i == 1) {
+				doStatementStr = doStatement[i];
+			}
+		}
+		String[] otherwiseStatement = doStatementStr.split("otherwise");
+		for(int i =0; i < otherwiseStatement.length ; i++) {
+			if(i == 0) {
+				doStatementStr = otherwiseStatement[i];
+			}
+			if(i == 1) {
+				otherStatementStr = otherwiseStatement[i];
+			}
+		}
+
+		System.out.println("Do: " + doStatementStr);
+		System.out.println("Else: " + otherStatementStr);
+
+		Expression leftExpression = Parser.parseExpression(theParts[1]);
+		String logicalOperator = theParts[2];
+		Expression rightExpression = Parser.parseExpression(theParts[3]);
+
+		TestExpression theResult = new TestExpression(leftExpression,logicalOperator,rightExpression);
+		return theResult;
+	}
+	
 	static LiteralExpression parseLiteral(String value)
 	{
 		//We ONLY have a single LiteralType - int literal
@@ -96,6 +133,14 @@ public class Parser
 		//turn remember syntax into a RememberStatement
 		RememberStatement rs = new RememberStatement(type, name, valueExpression);
 		return rs;
+	}
+	
+	static QuestionStatement parseQuestion( Expression booleanExpression)
+	{
+		//parse this string into language objects
+		//turn remember syntax into a QuestionStatement
+		QuestionStatement qs = new QuestionStatement(booleanExpression);
+		return qs;
 	}
 	
 	public static void parse(String filename)
@@ -131,6 +176,11 @@ public class Parser
 		//Possible expressions types:
 		// do-math, resolve, literal
 		String[] theParts = expression.split("\\s+");
+		if(theParts[0].equals("test"))
+		{
+			//must be a test expression
+			return Parser.parseTestExpression(expression);
+		}
 		if(theParts[0].equals("do-math"))
 		{
 			//must be a do-math expression
@@ -167,6 +217,15 @@ public class Parser
 			//parse a remember statement with type, name, and value
 			theListOfStatements.add(Parser.parseRemember(theParts[1], 
 					theParts[2], Parser.parseExpression(everythingAfterTheEqualSign)));
+		}
+		if(theParts[0].equals("question"))
+		{
+			int posOfTestKeyword = s.indexOf("test");
+			String subStrTest = s.substring(posOfTestKeyword).trim();
+			System.out.println("After Test Identifier: " + subStrTest);
+
+			//parse a question statement with booleanExpression
+			theListOfStatements.add(Parser.parseQuestion(Parser.parseExpression(subStrTest)));
 		}
 	}
 }
