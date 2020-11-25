@@ -28,96 +28,126 @@ public class Parser
 		return rs;
 	}
 	
+	private static boolean isMathOp(String s)
+	{
+		return "+-*/%".indexOf(s.trim()) > -1;
+	}
+	
+	private static boolean isArithmeticBooleanOp(String s)
+	{
+		//only detect the first part of an arithmetic boolean 
+		//op and then concatenate until space
+		String[] theOps = "< > ! =".split(" ");
+		for(int i = 0; i < theOps.length; i++)
+		{
+			if(theOps[i].equals(s.trim()))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private static int getDoMathExpressionEndBucket(int startPos, String[] theParts)
+	{
+		//do-math do-math a + 7 + do-math b + 4
+		int opCount = 0;
+		while(startPos < theParts.length)
+		{
+			if(theParts[startPos].equals("do-math"))
+			{
+				opCount++;
+			}
+			else if(Parser.isMathOp(theParts[startPos]))
+			{
+				opCount--;
+				if(opCount == 0)
+				{
+					return startPos-1; //add startPos to the end of the string
+				}
+			}
+			startPos++;
+		}
+		return startPos;
+		
+	}
+	
+	static TestExpression parseTest(String expression)
+	{
+		//test do-math 5 + 4 < 7
+		expression = expression.substring(5);
+		String left = "";
+		int pos;
+		for(pos = 0; pos < expression.length(); pos++)
+		{
+			if(Parser.isArithmeticBooleanOp("" + expression.charAt(pos)))
+			{
+				break;
+			}
+			left = left + expression.charAt(pos);
+		}
+		
+		//pos is now equal to the position of the beginning of the operator
+		String op = "";
+		while(expression.charAt(pos) != ' ')
+		{
+			op = op + expression.charAt(pos);
+			pos++;
+		}
+		//op should now hold the entire operator
+		
+		String right = expression.substring(pos).trim();
+		Expression leftExpression = Parser.parseExpression(left);
+		Expression rightExpression = Parser.parseExpression(right);
+		return new TestExpression(leftExpression, op, rightExpression);
+	}
+	
 	static DoMathExpression parseDoMath(String expression)
 	{
-		//do-math do-math a + 7 + 4 - doesn't work for this YET!
+		//do-math do-math a + 7 + do-math b + 4 - doesn't work for this YET!
+		//do-math expression op expression
 		//make the above work for HW
 		
 		//do-math a + 7 - will work for this
 		// (resolve expression a) + (int_lit expression 7)
 		//right now we are assuming only a single level of do-math
 		String[] theParts = expression.split("\\s+");
-//		Expression left = Parser.parseExpression(theParts[1]);
-//		String op = theParts[2];
-//		Expression right = Parser.parseExpression(theParts[3]);
-		
-		String leftOp = "";
-		String rightOp = "";
-		String op = "";
-		String oprts = "+-*/%";
-		int counter = 1;
-		boolean countLeft = false;	
-		for (int i = 1; i < theParts.length; i++)
+		Expression left;
+		int pos = 1;
+		String temp = "";
+		if(theParts[pos].equals("do-math"))
 		{
-			if (!countLeft)
+			//we need to handle the left expression as a do-math expression
+			//left side contains at least 1 do-math expression
+			//capture the substring from the current point until we reach the appropriate
+			//operator
+			pos = Parser.getDoMathExpressionEndBucket(0, theParts);
+			//pos is the position in theParts where the do math is complete for the left side
+			
+			for(int i = 1; i <= pos; i++)
 			{
-				if (theParts[i].equals("do-math"))
-				{
-					counter++;
-				}
-				else if (oprts.indexOf(theParts[i]) >= 0)
-				{
-					counter--;
-				}
-				if (counter > 0)
-				{
-					leftOp = leftOp + " " + theParts[i];
-				}
-				else
-				{
-					op = theParts[i];
-					countLeft = true;
-				}
+				temp += theParts[i] + " ";
 			}
-			else
-			{
-				rightOp = rightOp + " " + theParts[i];
-			}
+			left = Parser.parseDoMath(temp.trim()); 
+		}
+		else
+		{
+			//it is either a resolve or literal expression
+			left = Parser.parseExpression(theParts[pos]);
 		}
 		
-		Expression left = Parser.parseExpression(leftOp.trim());
-
-		Expression right = Parser.parseExpression(rightOp.trim());
+		String math_op = theParts[pos+1];
 		
-		//create and return an instance of DoMathExpression
-		DoMathExpression theResult = new DoMathExpression(left, op, right);
-		return theResult;
-	}
+		//everything from pos+2 forward is the right half of our do-math expression
+	    temp = "";
+		for(int i = pos+2; i < theParts.length; i++)
+		{
+			temp += theParts[i] + " ";
+		}
+		Expression right = Parser.parseExpression(temp.trim());
 	
-	static TestExpression parseTestExpression(String expression)
-	{
-		String[] theParts = expression.split("\\s+");
-		String[] doStatement = expression.split("do");
-		String doStatementStr = null;
-		String otherStatementStr = null;
-
-		if(theParts[0].equals("test"))
-		{
-			System.out.println("Expression Identified : "+theParts[0]);
-		}
-		for(int i =0; i < doStatement.length ; i++) {
-			if(i == 1) {
-				doStatementStr = doStatement[i];
-			}
-		}
-		String[] otherwiseStatement = doStatementStr.split("otherwise");
-		for(int i =0; i < otherwiseStatement.length ; i++) {
-			if(i == 0) {
-				doStatementStr = otherwiseStatement[i];
-			}
-			if(i == 1) {
-				otherStatementStr = otherwiseStatement[i];
-			}
-		}
-
-		System.out.println("Do: " + doStatementStr);
-		System.out.println("Else: " + otherStatementStr);
-
-		Expression leftExpression = Parser.parseExpression(theParts[1]);
-		String logicalOperator = theParts[2];
-		Expression rightExpression = Parser.parseExpression(theParts[3]);
-
-		TestExpression theResult = new TestExpression(leftExpression,logicalOperator,rightExpression);
+		//create and return an instance of DoMathExpression
+		DoMathExpression theResult = new DoMathExpression(left, math_op, right);
 		return theResult;
 	}
 	
@@ -135,13 +165,18 @@ public class Parser
 		return rs;
 	}
 	
-	static QuestionStatement parseQuestion( Expression booleanExpression)
+	static QuestionStatement parseQuestion(TestExpression testExpression, Statement trueStatement, Statement falseStatement)
 	{
-		//parse this string into language objects
-		//turn remember syntax into a QuestionStatement
-		QuestionStatement qs = new QuestionStatement(booleanExpression);
+		QuestionStatement qs = new QuestionStatement(testExpression, trueStatement, falseStatement);
 		return qs;
 	}
+	
+	static UpdateStatement parseUpdate(String name, Expression valueExpression) 
+	{
+		UpdateStatement us = new UpdateStatement(name, valueExpression);
+		return us;
+	}
+
 	
 	public static void parse(String filename)
 	{
@@ -159,7 +194,7 @@ public class Parser
 			String[] theProgramLines = fileContents.split(";");
 			for(int i = 0; i < theProgramLines.length; i++)
 			{
-				parseStatement(theProgramLines[i]);
+				Parser.theListOfStatements.add(parseStatement(theProgramLines[i]));
 			}
 		}
 		catch(Exception e)
@@ -176,15 +211,15 @@ public class Parser
 		//Possible expressions types:
 		// do-math, resolve, literal
 		String[] theParts = expression.split("\\s+");
-		if(theParts[0].equals("test"))
-		{
-			//must be a test expression
-			return Parser.parseTestExpression(expression);
-		}
 		if(theParts[0].equals("do-math"))
 		{
 			//must be a do-math expression
 			return Parser.parseDoMath(expression);
+		}
+		else if(theParts[0].equals("test"))
+		{
+			//must be a test expression
+			return Parser.parseTest(expression);
 		}
 		else if(Character.isDigit(theParts[0].charAt(0))) //does the value start with a number
 		{
@@ -199,7 +234,7 @@ public class Parser
 	}
 	
 	//parses the top level statements within our language
-	static void parseStatement(String s)
+	static Statement parseStatement(String s)
 	{
 		//split the string on white space (1 or more spaces)
 		String[] theParts = s.split("\\s+");
@@ -215,17 +250,32 @@ public class Parser
 			String everythingAfterTheEqualSign = s.substring(posOfEqualSign+1).trim();
 	
 			//parse a remember statement with type, name, and value
-			theListOfStatements.add(Parser.parseRemember(theParts[1], 
-					theParts[2], Parser.parseExpression(everythingAfterTheEqualSign)));
+			return Parser.parseRemember(theParts[1], 
+					theParts[2], Parser.parseExpression(everythingAfterTheEqualSign));
 		}
-		if(theParts[0].equals("question"))
+		else if(theParts[0].equals("question"))
 		{
-			int posOfTestKeyword = s.indexOf("test");
-			String subStrTest = s.substring(posOfTestKeyword).trim();
-			System.out.println("After Test Identifier: " + subStrTest);
-
-			//parse a question statement with booleanExpression
-			theListOfStatements.add(Parser.parseQuestion(Parser.parseExpression(subStrTest)));
+			String expression = s.substring("question".length()).trim();
+			int posOfDoKeyword = expression.indexOf("do");
+			String testExpression = expression.substring(0, posOfDoKeyword);
+			expression = expression.substring(posOfDoKeyword + "do".length()).trim();
+			int posOfOtherwiseKeyword = expression.indexOf("otherwise");
+			String trueStatement = expression.substring(0, posOfOtherwiseKeyword).trim();
+			String falseStatement = expression.substring(posOfOtherwiseKeyword + "otherwise".length()).trim();
+			
+			return Parser.parseQuestion(
+							(TestExpression)Parser.parseExpression(testExpression), 
+							Parser.parseStatement(trueStatement), 
+							Parser.parseStatement(falseStatement));
+			
 		}
+		else if (theParts[0].equals("update"))
+		{
+			int posOfEqualSign = s.indexOf('=');
+			String everythingAfterTheEqualSign = s.substring(posOfEqualSign + 1).trim();
+
+			return Parser.parseUpdate(theParts[1], Parser.parseExpression(everythingAfterTheEqualSign));
+		}
+		throw new RuntimeException("Not a known statement type: " + s);
 	}
 }

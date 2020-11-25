@@ -1,37 +1,37 @@
 package Parser;
 
-public class TestExpression extends Expression
+public class TestExpression extends Expression 
 {
-	private Expression leftExpression;
-
-
-	private Expression rightExpression;
-	private String logicalOperator;
-
-	public TestExpression(Expression leftExpression, String logicalOperator, Expression rightExpression)
+	private Expression left;
+	private Expression right;
+	private String op;
+	
+	public TestExpression(Expression left, String op, Expression right)
 	{
 		super("Test Expression");
-		this.leftExpression = leftExpression;
-		this.rightExpression = rightExpression;
-		this.logicalOperator = logicalOperator;
+		this.left = left;
+		this.right = right;
+		this.op = op;
 	}
-
+	
 	public String toString()
 	{
-		return super.toString() + "\n\t" + this.leftExpression.toString() + " "
-				+ this.logicalOperator + " " + this.rightExpression.toString();
+		return super.toString() + "\n\t" + this.left.toString() + " "
+				+ this.op + " " + this.right.toString();
 	}
 
-	public Expression getLeftExpression() {
-		return leftExpression;
+	public Expression getLeft() {
+		return left;
 	}
 
-	public Expression getRightExpression() {
-		return rightExpression;
+	public Expression getRight() {
+		return right;
 	}
 
-	public String getLogicalOperator() {
-		return logicalOperator;
+	public String getOp() {
+		return op;
 	}
 
+	
+	
 }
