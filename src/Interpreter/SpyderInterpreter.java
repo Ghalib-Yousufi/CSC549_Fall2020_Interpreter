@@ -34,6 +34,10 @@ public class SpyderInterpreter
 		{
 			SpyderInterpreter.interpretUpdateStatement((UpdateStatement)s);
 		}
+		else if(s instanceof WhileStatement)
+		{
+			SpyderInterpreter.interpretWhileStatement((WhileStatement)s);
+		}
 	}
 	
 	public static void interpret(ArrayList<Statement> theStatements)
@@ -234,6 +238,13 @@ public class SpyderInterpreter
 		int value = SpyderInterpreter.getExpressionValue(valueExpression);
 		SpyderInterpreter.theEnv.updateVariable(us.getName(), value);		
 		SpyderInterpreter.theOutput.add("<HIDDEN> Updated " + us.getName() + " = " + us.getValue() + " in the variable environment.");
+	}
+	
+	private static void interpretWhileStatement(WhileStatement rs)
+	{
+		TestExpression te = rs.getTestExpression();
+		int answer = SpyderInterpreter.getExpressionValue(te);
+		SpyderInterpreter.interpretStatement(rs.getUpdateStatement());
 	}
 	
 	private static void interpretQuestionStatement(QuestionStatement qs)
