@@ -1,11 +1,11 @@
 package Parser;
 
-public class UpdateStatement extends Statement {
-
+public class UpdateStatement extends Statement
+{
 	private String name;
-
+	private String type;
 	private Expression value;
-
+	
 	public UpdateStatement(String name, Expression value)
 	{
 		super("Update Statement");
@@ -15,16 +15,19 @@ public class UpdateStatement extends Statement {
 
 	public String toString()
 	{
-		return super.toString() + "\n\t" + this.name + " = " + this.value;
+		return super.toString() + "\n\t" + 
+	this.name + " = " + this.value;
 	}
-
-	public String getName() {
+	
+	public String getName() 
+	{
 		return name;
 	}
 
-	public Expression getValue() {
+	public Expression getValueExpression() 
+	{
 		return value;
 	}
-
-
+	
+	
 }

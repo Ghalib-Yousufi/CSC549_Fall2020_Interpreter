@@ -26,17 +26,21 @@ public class SpyderInterpreter
 			//interpret a remember statement
 			SpyderInterpreter.interpretRememberStatement((RememberStatement)s);
 		}
+		else if(s instanceof UpdateStatement)
+		{
+			SpyderInterpreter.interpretUpdateStatement((UpdateStatement)s);
+		}
 		else if(s instanceof QuestionStatement)
 		{
 			SpyderInterpreter.interpretQuestionStatement((QuestionStatement)s);
 		}
-		else if (s instanceof UpdateStatement)
-		{
-			SpyderInterpreter.interpretUpdateStatement((UpdateStatement)s);
-		}
 		else if(s instanceof WhileStatement)
 		{
 			SpyderInterpreter.interpretWhileStatement((WhileStatement)s);
+		}
+		else if(s instanceof PrintStatement)
+		{
+			SpyderInterpreter.interpretPrintStatement((PrintStatement)s);
 		}
 	}
 	
@@ -232,19 +236,43 @@ public class SpyderInterpreter
 		SpyderInterpreter.theOutput.add("<HIDDEN> Added " + rs.getName() + " = " + answer + " to the variable environment.");
 	}
 	
+	private static void interpretWhileStatement(WhileStatement ws)
+	{
+		if(ws.getTest_expression() instanceof TestExpression)
+		{
+			TestExpression te = (TestExpression)ws.getTest_expression();
+			// ArrayList<Statement> stmt = ws.getStatement_to_execute();
+			ArrayList<Statement> stmt = ws.getStatement_to_execute();
+			while(SpyderInterpreter.interpretTestExpression(te) != 0)
+			{
+				for(Statement s : stmt)
+				{
+					SpyderInterpreter.interpretStatement(s);
+				}
+			}
+		}
+		else
+		{
+			throw new RuntimeException("While Loops require a TestExpression!!!");
+		}
+		
+		
+	}
 	private static void interpretUpdateStatement(UpdateStatement us)
 	{
-		Expression valueExpression = us.getValue();
-		int value = SpyderInterpreter.getExpressionValue(valueExpression);
-		SpyderInterpreter.theEnv.updateVariable(us.getName(), value);		
-		SpyderInterpreter.theOutput.add("<HIDDEN> Updated " + us.getName() + " = " + us.getValue() + " in the variable environment.");
+		//we need to resolve this expression before we can actually remember anything
+		Expression valueExpression = us.getValueExpression();
+		int answer = SpyderInterpreter.getExpressionValue(valueExpression);
+		
+		SpyderInterpreter.theEnv.updateVariable(us.getName(), answer);
+		SpyderInterpreter.theOutput.add("<HIDDEN> Updated " + us.getName() + " = " + answer + " in the variable environment.");
 	}
 	
-	private static void interpretWhileStatement(WhileStatement rs)
+	private static void interpretPrintStatement(PrintStatement ps)
 	{
-		TestExpression te = rs.getTestExpression();
-		int answer = SpyderInterpreter.getExpressionValue(te);
-		SpyderInterpreter.interpretStatement(rs.getUpdateStatement());
+		Expression expression_to_print = ps.getExpression_to_print();
+		int answer = SpyderInterpreter.getExpressionValue(expression_to_print);
+		SpyderInterpreter.theOutput.add("***** " + answer);
 	}
 	
 	private static void interpretQuestionStatement(QuestionStatement qs)
