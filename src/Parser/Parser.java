@@ -165,7 +165,7 @@ public class Parser
 		return rs;
 	}
 	
-	static WhileStatement parseWhile(Expression testExpression, ArrayList<Statement> executeStatement)
+	static WhileStatement parseWhile(Expression testExpression, Statement executeStatement)
 	{
 		WhileStatement ws = new WhileStatement(testExpression, executeStatement);
 		return ws;
@@ -175,6 +175,12 @@ public class Parser
 	{
 		PrintStatement ps = new PrintStatement(expression_to_print);
 		return ps;
+	}
+	
+	static BlockStatement parseBlock(ArrayList<Statement> statements)
+	{
+		BlockStatement bs = new BlockStatement(statements);
+		return bs;
 	}
 	
 	static UpdateStatement parseUpdate(String name, Expression valueExpression)
@@ -248,7 +254,7 @@ public class Parser
 	static Statement parseStatement(String s)
 	{
 		//split the string on white space (1 or more spaces)
-		String[] theParts = s.split("\\s+");
+		String[] theParts = s.trim().split("\\s+");
 		// remember int b = do-math 5 + a;
 		//s = "remember int a = 5"
 		//parts = {"remember", "int", "a", "=", "5"}
@@ -270,6 +276,22 @@ public class Parser
 			Expression expression_to_print = Parser.parseExpression(temp);
 			return Parser.parsePrint(expression_to_print);
 		}
+		else if(theParts[0].equals("begin")) //NOT CURRENTLY COMPATIBLE WITH EMBEDDED BLOCKS
+		{
+			//begin print e, update e = do-math e - 1 end
+			String temp = s.substring("begin".length(),s.length() - "end".length()).trim();
+			//temp is currently: print e, update e = do-math e - 1
+			//how do we split this into a collection of statements?
+			//if we split on "," this would assume that there are zero block 
+			//statements inside this block statement.
+			String[] blockParts = temp.split(",");
+			ArrayList<Statement> theStatements = new ArrayList<Statement>();
+			for(String stmt : blockParts)
+			{
+				theStatements.add(Parser.parseStatement(stmt.trim()));
+			}
+			return Parser.parseBlock(theStatements);
+		}
 		else if(theParts[0].equals("while"))
 		{
 			//while <test-expression> do <statement>;
@@ -277,31 +299,9 @@ public class Parser
 			String[] tempParts = temp.split("do ");
 			String test_expression_string = tempParts[0].trim();
 			String execute_statement_string = tempParts[1].trim();
-			String[] stmtBlocks = null;
-			ArrayList<Statement> BlockStatements = new ArrayList<Statement>();
-			if(execute_statement_string.contains("begin"))
-			{
-				System.out.println("execute_statement_string " + execute_statement_string);
-				String blockStatements = execute_statement_string.substring("begin".length(),
-						execute_statement_string.length() - "end".length()).trim();
-				stmtBlocks = blockStatements.split(",");
-				BlockStatements.clear();
-				for(int i = 0 ; i < stmtBlocks.length ; i++)
-				{
-					System.out.println("Block Statements " + stmtBlocks[i].trim());
-					BlockStatements.add(parseStatement(stmtBlocks[i].trim()));
-
-				}
-
-			}
-			else
-			{
-				BlockStatements.clear();
-				BlockStatements.add(parseStatement(execute_statement_string));
-			}
 			Expression test_expression = Parser.parseExpression(test_expression_string);
 			Statement execute_statement = Parser.parseStatement(execute_statement_string);
-			return Parser.parseWhile(test_expression,BlockStatements);
+			return Parser.parseWhile(test_expression, execute_statement);
 		}
 		else if(theParts[0].equals("update"))
 		{

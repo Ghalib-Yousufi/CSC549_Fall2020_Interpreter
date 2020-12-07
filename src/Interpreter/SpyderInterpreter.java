@@ -42,6 +42,10 @@ public class SpyderInterpreter
 		{
 			SpyderInterpreter.interpretPrintStatement((PrintStatement)s);
 		}
+		else if(s instanceof BlockStatement)
+		{
+			SpyderInterpreter.interpretBlockStatement((BlockStatement)s);
+		}
 	}
 	
 	public static void interpret(ArrayList<Statement> theStatements)
@@ -241,14 +245,10 @@ public class SpyderInterpreter
 		if(ws.getTest_expression() instanceof TestExpression)
 		{
 			TestExpression te = (TestExpression)ws.getTest_expression();
-			// ArrayList<Statement> stmt = ws.getStatement_to_execute();
-			ArrayList<Statement> stmt = ws.getStatement_to_execute();
+			Statement stmt = ws.getStatement_to_execute();
 			while(SpyderInterpreter.interpretTestExpression(te) != 0)
 			{
-				for(Statement s : stmt)
-				{
-					SpyderInterpreter.interpretStatement(s);
-				}
+				SpyderInterpreter.interpretStatement(stmt);
 			}
 		}
 		else
@@ -273,6 +273,15 @@ public class SpyderInterpreter
 		Expression expression_to_print = ps.getExpression_to_print();
 		int answer = SpyderInterpreter.getExpressionValue(expression_to_print);
 		SpyderInterpreter.theOutput.add("***** " + answer);
+	}
+	
+	private static void interpretBlockStatement(BlockStatement bs)
+	{
+		ArrayList<Statement> statements = bs.getStatements();
+		for(Statement stmt : statements)
+		{
+			SpyderInterpreter.interpretStatement(stmt);
+		}
 	}
 	
 	private static void interpretQuestionStatement(QuestionStatement qs)

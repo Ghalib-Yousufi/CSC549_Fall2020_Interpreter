@@ -9,7 +9,7 @@ public class UpdateStatement extends Statement
 	public UpdateStatement(String name, Expression value)
 	{
 		super("Update Statement");
-		this.name = name;
+		this.name = name.trim();
 		this.value = value;
 	}
 

@@ -20,6 +20,7 @@ public class VariableEnvironment
 	
 	public void updateVariable(String name, int value)
 	{
+		name = name.trim();
 		for(NameValuePair nvp : this.theVariables)
 		{
 			if(nvp.getName().equals(name))
