@@ -195,6 +195,58 @@ public class Parser
 		return qs;
 	}
 	
+	static ArrayList<Statement> nestedStatements(String s, ArrayList<Statement> list)
+	{
+				
+		String init = "";
+		if (s.equals("begin") && s.equals("end"))
+		{
+			init = s.substring("begin".length(), s.length() - "end".length()).trim();
+		}
+		ArrayList<Statement> statementList = new ArrayList<Statement>();
+		int countBegin = 0;
+		String[] theParts = init.split("\\s+");
+		String temp = "";
+		for(String str : theParts)
+		{
+			if(str.equals(","))
+			{
+				String temp1 = str.substring(0, str.length() - 1);
+				temp1 = temp1 + " " + temp1;
+				if (temp1.equals("end"))
+				{
+					countBegin--;
+				}
+				else if (countBegin == 0 && temp1.length() > 0)
+				{
+					statementList.add(Parser.parseStatement(temp1.trim()));
+					temp1 = "";
+				}
+				else
+				{
+					temp1 = temp1 + ",";
+				}
+			}
+			else
+			{
+				if (str.equals("begin"))
+				{
+					countBegin++;
+				}
+				else if (str.equals("end"))
+				{
+					countBegin--;
+				}
+				temp = temp + " " + str;
+			}
+		}
+		if (temp.length() > 0)
+		{
+			statementList.add(Parser.parseStatement(temp.trim()));
+		}
+		return statementList;
+	}
+	
 	public static void parse(String filename)
 	{
 		try
@@ -285,11 +337,12 @@ public class Parser
 			//if we split on "," this would assume that there are zero block 
 			//statements inside this block statement.
 			String[] blockParts = temp.split(",");
-			ArrayList<Statement> theStatements = new ArrayList<Statement>();
+			ArrayList<Statement> tempList = new ArrayList<Statement>();
 			for(String stmt : blockParts)
 			{
-				theStatements.add(Parser.parseStatement(stmt.trim()));
+				tempList.add(Parser.parseStatement(stmt.trim()));
 			}
+			ArrayList<Statement> theStatements = Parser.nestedStatements(s, tempList);
 			return Parser.parseBlock(theStatements);
 		}
 		else if(theParts[0].equals("while"))
