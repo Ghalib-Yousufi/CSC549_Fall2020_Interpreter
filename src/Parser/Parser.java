@@ -3,9 +3,13 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import ParserTree.LanguageCore;
+import ParserTree.ProgramTree;
+
 public class Parser 
 {
 	private static ArrayList<Statement> theListOfStatements = new ArrayList<Statement>();
+	private static ArrayList<String> listOfTokens = new ArrayList<String>();
 	
 	public static ArrayList<Statement> getParsedStatements()
 	{
@@ -247,6 +251,11 @@ public class Parser
 		return statementList;
 	}
 	
+	public static ArrayList<String> getTheListOfTokens()
+	{
+		return listOfTokens;
+	}
+	
 	public static void parse(String filename)
 	{
 		try
@@ -270,6 +279,60 @@ public class Parser
 		{
 			e.printStackTrace();
 			System.err.println("File Not Found!!!");
+		}
+	}
+	
+	public static void parseTree(String filename)
+	{
+		try
+		{
+			Scanner input = new Scanner(new File(System.getProperty("user.dir") + "/src/" + filename));
+			String fileContents = "";
+			while(input.hasNext())
+			{
+				fileContents += input.nextLine().trim();
+			}
+			
+			char token;
+			String currentToken="";
+
+			for(int index = 0 ; index < fileContents.length() ; index++)
+			{
+				token = fileContents.charAt(index);
+				if(token == ' ') 
+				{
+					if(LanguageCore.isReservedWord(currentToken))
+					{
+						listOfTokens.add(currentToken.trim());
+						currentToken = "";
+					}
+
+
+				}
+				else if(token == '=') 
+				{
+					String varName = currentToken;
+					listOfTokens.add(varName.trim());
+					currentToken = "";	
+				}
+				else if(token == ';') 
+				{
+					String value = currentToken;
+					listOfTokens.add(value.trim());
+					listOfTokens.add(Character.toString(token));
+					currentToken = "";
+				}
+				else
+				{
+					currentToken = currentToken + token;
+				}
+			}
+
+		} 
+		catch(Exception e)
+		{
+			System.err.println(e.getStackTrace());
+			System.err.println("File Not Found!");
 		}
 	}
 	

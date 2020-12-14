@@ -1,4 +1,4 @@
-package Parser;
+package ParserTree;
 
 public class ExpressionTree extends ExpressionPart
 {
@@ -8,7 +8,7 @@ public class ExpressionTree extends ExpressionPart
 
 	public ExpressionTree(PartTree expressionPartType, ExpressionPart left, SymbolTree symbol, ExpressionPart right)
 	{
-		super(expressionPartType);
+		super("Expression Tree");
 		this.left = left;
 		this.symbol = symbol;
 		this.right = right;
